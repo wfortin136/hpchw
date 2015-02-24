@@ -1,0 +1,19 @@
+MPIF =	mpifort
+FORTRAN = gfortran
+
+all: serial block_parallel
+
+%.o: %.f95
+	$(FORTRAN) $< -c -o $@
+
+serial: serial_laxwendroff.o 
+	$(FORTRAN) -o serial serial_laxwendroff.o
+
+%.o: %.f95
+	$(MPIF) $< -c -o $@
+
+block_parallel: parallel_laxwendroff.o
+	$(MPIF) -o block_parallel parallel_laxwendroff.o	
+
+clean:
+	rm -f *.a *.o a.out core* serial block_parallel
