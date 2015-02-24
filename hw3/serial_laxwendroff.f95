@@ -7,7 +7,7 @@ program main
   integer nt, n, l
   integer m, i, j, leng
   logical left, right, bottom, top
-  real*8 t, delta, delta_t
+  real*8 t, delta, delta_t, time1, time2
   real*8 u, v, courant_stab, temp1, temp2
  
   call getarg(0, prog_name)
@@ -51,13 +51,13 @@ program main
   call gaussian_dist(dble(1),conc(1,:,:))
   !print *, conc(1,:,:)
   print *, "Gaussian Complete"
-
+  
   do m=2, nt
-    if(mod(m,write_tstep) == 0) then
-      write(m_count,*) m
-      outfile = trim(prog_name(3:))//"_"//trim(adjustl(m_count))//".out"
-      open(m, file=outfile)
-    end if
+    !if(mod(m,write_tstep) == 0) then
+    !  write(m_count,*) m
+    !  outfile = trim(prog_name(3:))//"_"//trim(adjustl(m_count))//".out"
+    !  open(m, file=outfile)
+    !end if
     
     do j=1, n
           if(j==1) then
@@ -84,15 +84,14 @@ program main
             conc(2,i,j) = .25*temp1-((delta_t/(2*delta))*temp2)
           end do
         end do
-        if(mod(m,write_tstep)==0) then
-          do i=1, n
-            write(m,*) conc(2,i,:)
-          end do
-          close(m)
-        end if
+        !if(mod(m,write_tstep)==0) then
+        !  do i=1, n
+        !    write(m,*) conc(2,i,:)
+        !  end do
+        !  close(m)
+        !end if
         conc(1,:,:) = conc(2,:,:)
   end do
-  
   deallocate(conc)
   close(99)
 contains

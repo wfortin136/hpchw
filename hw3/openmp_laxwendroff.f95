@@ -10,7 +10,7 @@ program main
   integer nt, n, l
   integer m, i, j, leng
   logical left, right, bottom, top
-  real*8 t, delta, delta_t
+  real*8 t, delta, delta_t, time1, time2
   real*8 u, v, courant_stab, temp1, temp2
 
     call getarg(0, prog_name)
@@ -58,6 +58,7 @@ program main
   !print*, omp_get_max_threads()
   
   CHUNK=100
+  time1=omp_get_wtime()
   do m=2, nt
     !print*, m
     if(mod(m,write_tstep) == 0) then
@@ -93,6 +94,9 @@ program main
         conc(1,0,:)=conc(1,n,:)
         conc(1,n+1,:)=conc(1,1,:)            
   end do
+  time2=omp_get_wtime()
+
+  print *,time2-time1
   deallocate(conc)
   close(99)
 contains

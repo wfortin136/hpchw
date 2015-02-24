@@ -13,7 +13,7 @@ program main
   integer m, x, i, j, icount, jcount, leng
   integer l_iwidth, istart, iend, l_jwidth, jstart, jend
   integer istart2, iend2, jstart2, jend2
-  real*8 t, delta, delta_t
+  real*8 t, delta, delta_t, time1, time2
   real*8 u, v, courant_stab, temp1, temp2
 
   call MPI_INIT(ierr)
@@ -100,14 +100,14 @@ program main
   l_jwidth=n/dims(2)
   jstart=coords(1)*l_jwidth+1
   jend = jstart+l_jwidth-1
-
+  time1=MPI_Wtime()
   !print *, rank, istart, iend, jstart, jend
   do m=2, nt
-    if(mod(m,write_tstep) == 0 .AND. rank==0 ) then
-      write(m_count,*) m
-      outfile = trim(prog_name(3:))//"_"//trim(adjustl(m_count))//".out"
-      open(m, file=outfile)
-    end if
+    !if(mod(m,write_tstep) == 0 .AND. rank==0 ) then
+    !  write(m_count,*) m
+    !  outfile = trim(prog_name(3:))//"_"//trim(adjustl(m_count))//".out"
+    !  open(m, file=outfile)
+    !end if
         do i=istart, iend
 
           do j=jstart, jend
@@ -147,30 +147,32 @@ program main
         call MPI_RECV(conc(1,istart:iend, jend+1),l_iwidth, & 
               MPI_REAL8, borders(2), 1, cartcom, stat, ierr)
         
-        if(mod(m,write_tstep)==0) then
-          if(rank/=0) then
-            call MPI_SEND(conc(2,istart:iend, jstart:jend),l_iwidth*l_jwidth, & 
-                MPI_REAL8, 0, rank, cartcom, ierr) 
-          else
-            do r=1, numrank-1
-              call MPI_CART_COORDS(cartcom, r, 2, coords, ierr)
-              istart2=coords(2)*l_iwidth+1
-              iend2 = istart2+l_iwidth-1
-              jstart2=coords(1)*l_jwidth+1
-              jend2 = jstart2+l_jwidth-1
-              call MPI_RECV(conc(2,istart2:iend2, jstart2:jend2),l_iwidth*l_jwidth, &
-                MPI_REAL8, r, r, cartcom, stat, ierr)
-            end do
-            do x=1, n
-              write(m,*) conc(2,x,:)
-            end do
-          end if
-        close(m)
-        end if
+        !if(mod(m,write_tstep)==0) then
+        !  if(rank/=0) then
+        !    call MPI_SEND(conc(2,istart:iend, jstart:jend),l_iwidth*l_jwidth, & 
+        !        MPI_REAL8, 0, rank, cartcom, ierr) 
+        !  else
+        !    do r=1, numrank-1
+        !      call MPI_CART_COORDS(cartcom, r, 2, coords, ierr)
+        !      istart2=coords(2)*l_iwidth+1
+        !      iend2 = istart2+l_iwidth-1
+        !      jstart2=coords(1)*l_jwidth+1
+        !      jend2 = jstart2+l_jwidth-1
+        !      call MPI_RECV(conc(2,istart2:iend2, jstart2:jend2),l_iwidth*l_jwidth, &
+        !        MPI_REAL8, r, r, cartcom, stat, ierr)
+        !    end do
+        !    do x=1, n
+        !      write(m,*) conc(2,x,:)
+        !    end do
+        !  end if
+        !close(m)
+        !end if
         !set current time step to previous and increment forward in loop
         conc(1,istart:iend,jstart:jend) = conc(2,istart:iend,jstart:jend)
   end do
+  time2=MPI_Wtime()
 
+  print*, time2-time1
   deallocate(conc)
 
   call MPI_FINALIZE(ierr)
